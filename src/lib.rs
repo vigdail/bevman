@@ -1,4 +1,17 @@
-use bevy::{input::system::exit_on_esc_system, prelude::*};
+mod level;
+mod loading_state;
+mod player;
+
+use bevy::{input::system::exit_on_esc_system, log::LogSettings, prelude::*};
+use level::LevelPlugin;
+use loading_state::LoadingPlugin;
+use player::PlayerPlugin;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum GameState {
+    Loading,
+    Gameplay,
+}
 
 pub struct BevManPlugin;
 
@@ -12,8 +25,25 @@ impl Plugin for BevManPlugin {
             ..Default::default()
         })
         .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(LogSettings {
+            level: bevy::log::Level::INFO,
+            ..Default::default()
+        })
+        .add_state(GameState::Loading)
         .add_system(exit_on_esc_system.system())
         .add_plugins(DefaultPlugins)
-        .add_startup_system((|| info!("BevMan")).system());
+        .add_plugin(LoadingPlugin)
+        .add_plugin(PlayerPlugin)
+        .add_plugin(LevelPlugin)
+        .add_startup_system(startup_system.system());
     }
+
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+}
+
+fn startup_system(mut cmd: Commands) {
+    info!("Creating a camera!");
+    cmd.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
