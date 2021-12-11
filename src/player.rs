@@ -1,11 +1,12 @@
-use crate::GameState;
+use crate::{
+    level::{CELL_HEIGHT, CELL_WIDTH},
+    GameState,
+};
 use bevy::{
     input::{keyboard::KeyboardInput, ElementState},
     prelude::*,
 };
 
-pub const CELL_WIDTH: f32 = 32.0;
-pub const CELL_HEIGHT: f32 = 32.0;
 pub const PLAYER_SPEED: f32 = 50.0;
 
 pub struct Player;

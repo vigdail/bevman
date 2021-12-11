@@ -1,9 +1,12 @@
 use crate::{
     loading_state::TextureAssets,
-    player::{GridPosition, MoveDirection, Player, Speed, CELL_HEIGHT, CELL_WIDTH, PLAYER_SPEED},
+    player::{GridPosition, MoveDirection, Player, Speed, PLAYER_SPEED},
     GameState,
 };
 use bevy::prelude::*;
+
+pub const CELL_WIDTH: f32 = 32.0;
+pub const CELL_HEIGHT: f32 = 32.0;
 
 pub struct LevelPlugin;
 
