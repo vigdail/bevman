@@ -1,4 +1,5 @@
 use crate::{
+    camera::CameraTarget,
     loading_state::TextureAssets,
     player::{GridPosition, MoveDirection, Player, Speed, PLAYER_SPEED},
     GameState,
@@ -111,6 +112,7 @@ fn spawn_player(cmd: &mut Commands, material: Handle<ColorMaterial>, x: f32, y: 
     .insert(GridPosition::default())
     .insert(Player)
     .insert(Speed(PLAYER_SPEED))
+    .insert(CameraTarget::new(-50.0, 50.0, -50.0, 50.0, 0.2))
     .insert(MoveDirection::Right);
 }
 

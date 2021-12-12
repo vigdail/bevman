@@ -1,8 +1,10 @@
+mod camera;
 mod level;
 mod loading_state;
 mod player;
 
 use bevy::{input::system::exit_on_esc_system, log::LogSettings, prelude::*};
+use camera::CameraPlugin;
 use level::LevelPlugin;
 use loading_state::LoadingPlugin;
 use player::PlayerPlugin;
@@ -35,6 +37,7 @@ impl Plugin for BevManPlugin {
         .add_plugin(LoadingPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(LevelPlugin)
+        .add_plugin(CameraPlugin)
         .add_startup_system(startup_system.system());
     }
 
@@ -44,6 +47,5 @@ impl Plugin for BevManPlugin {
 }
 
 fn startup_system(mut cmd: Commands) {
-    info!("Creating a camera!");
     cmd.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
