@@ -13,8 +13,6 @@ pub struct Player;
 
 pub struct Speed(pub f32);
 
-pub struct DebugCell;
-
 #[derive(Copy, Clone, Debug)]
 pub enum MoveDirection {
     Up,
@@ -48,7 +46,10 @@ impl MoveDirection {
 pub struct NextDirection(Option<MoveDirection>);
 
 #[derive(Default)]
-pub struct GridPosition(i32, i32);
+pub struct GridPosition {
+    pub x: i32,
+    pub y: i32,
+}
 
 pub struct PlayerPlugin;
 
@@ -56,13 +57,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.insert_resource(NextDirection::default())
             .add_system_set(
-                SystemSet::on_enter(GameState::Gameplay)
-                    .with_system(create_debug_cell_system.system()),
-            )
-            .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(world_to_grid_system.system())
-                    .with_system(debug_cell_position_system.system())
                     .with_system(input_system.system())
                     .with_system(movement_system.system())
                     .with_system(change_direction_system.system()),
@@ -70,24 +66,11 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn create_debug_cell_system(mut cmd: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
-    cmd.spawn_bundle(SpriteBundle {
-        material: materials.add(ColorMaterial::color(Color::GREEN)),
-        sprite: Sprite {
-            size: Vec2::new(CELL_WIDTH, CELL_HEIGHT),
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..Default::default()
-    })
-    .insert(DebugCell);
-}
-
 fn world_to_grid_system(mut query: Query<(&Transform, &mut GridPosition)>) {
     for (transform, mut position) in query.iter_mut() {
         let x = (transform.translation.x / CELL_WIDTH).round() as i32;
         let y = (transform.translation.y / CELL_HEIGHT).round() as i32;
-        *position = GridPosition(x, y);
+        *position = GridPosition { x, y };
     }
 }
 
@@ -111,17 +94,6 @@ fn change_direction_system(
                 next_direction.0 = None;
             }
         }
-    }
-}
-
-fn debug_cell_position_system(
-    mut cell_query: Query<&mut Transform, With<DebugCell>>,
-    player_query: Query<&GridPosition, With<Player>>,
-) {
-    for (mut cell_transform, player_position) in cell_query.iter_mut().zip(player_query.iter()) {
-        let x = player_position.0 as f32 * CELL_WIDTH;
-        let y = player_position.1 as f32 * CELL_HEIGHT;
-        cell_transform.translation = Vec3::new(x, y, 0.0);
     }
 }
 
@@ -174,14 +146,14 @@ mod tests {
         let player_pos = world.get::<GridPosition>(player);
         assert!(player_pos.is_some());
         let player_pos = player_pos.unwrap();
-        assert_eq!(player_pos.0, 0);
-        assert_eq!(player_pos.1, 2);
+        assert_eq!(player_pos.x, 0);
+        assert_eq!(player_pos.y, 2);
 
         let enemy_pos = world.get::<GridPosition>(enemy);
         assert!(enemy_pos.is_some());
         let enemy_pos = enemy_pos.unwrap();
-        assert_eq!(enemy_pos.0, -1);
-        assert_eq!(enemy_pos.1, 20);
+        assert_eq!(enemy_pos.x, -1);
+        assert_eq!(enemy_pos.y, 20);
     }
 
     #[test]

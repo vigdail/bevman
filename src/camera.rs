@@ -32,6 +32,7 @@ impl Plugin for CameraPlugin {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn camera_follow_system(
     mut query: QuerySet<(
         Query<&mut Transform, With<Camera>>,

@@ -1,10 +1,12 @@
 mod camera;
+mod debug;
 mod level;
 mod loading_state;
 mod player;
 
 use bevy::{input::system::exit_on_esc_system, log::LogSettings, prelude::*};
 use camera::CameraPlugin;
+use debug::DebugPlugin;
 use level::LevelPlugin;
 use loading_state::LoadingPlugin;
 use player::PlayerPlugin;
@@ -35,6 +37,7 @@ impl Plugin for BevManPlugin {
         .add_system(exit_on_esc_system.system())
         .add_plugins(DefaultPlugins)
         .add_plugin(LoadingPlugin)
+        .add_plugin(DebugPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(CameraPlugin)
