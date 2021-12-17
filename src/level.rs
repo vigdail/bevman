@@ -34,7 +34,7 @@ impl Level {
     #[allow(dead_code)]
     pub fn is_wall(&self, x: usize, y: usize) -> bool {
         let index = self.xy_to_index(x, y);
-        self.walls[index]
+        self.walls.get(index).cloned().unwrap_or(false)
     }
 
     #[inline]
@@ -92,6 +92,8 @@ fn spawn_level_system(
             }
         }
     }
+
+    cmd.insert_resource(level);
 }
 
 fn spawn_wall(cmd: &mut Commands, material: Handle<ColorMaterial>, x: f32, y: f32) {

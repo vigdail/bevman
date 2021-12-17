@@ -1,5 +1,5 @@
 use crate::{
-    level::{CELL_HEIGHT, CELL_WIDTH},
+    level::{Level, CELL_HEIGHT, CELL_WIDTH},
     GameState,
 };
 use bevy::{
@@ -7,7 +7,7 @@ use bevy::{
     prelude::*,
 };
 
-pub const PLAYER_SPEED: f32 = 50.0;
+pub const PLAYER_SPEED: f32 = 100.0;
 
 pub struct Player;
 
@@ -74,9 +74,65 @@ fn world_to_grid_system(mut query: Query<(&Transform, &mut GridPosition)>) {
     }
 }
 
-fn movement_system(time: Res<Time>, mut query: Query<(&mut Transform, &MoveDirection, &Speed)>) {
+fn movement_system(
+    time: Res<Time>,
+    map: Res<Level>,
+    mut query: Query<(&mut Transform, &MoveDirection, &Speed)>,
+) {
     for (mut transform, direction, speed) in query.iter_mut() {
-        transform.translation += direction.to_vec3() * speed.0 * time.delta_seconds();
+        let target_position =
+            transform.translation + direction.to_vec3() * speed.0 * time.delta_seconds();
+
+        let left = target_position.x;
+        let right = target_position.x + CELL_WIDTH - 1.0;
+        let top = target_position.y.abs();
+        let bottom = (target_position.y - CELL_HEIGHT + 1.0).abs();
+
+        let left_column = (left / CELL_WIDTH).floor() as usize;
+        let right_column = (right / CELL_WIDTH).floor() as usize;
+        let top_row = (top / CELL_HEIGHT).floor() as usize;
+        let bottom_row = (bottom / CELL_HEIGHT).floor() as usize;
+
+        let top_left = map.is_wall(left_column, top_row);
+        let bottom_left = map.is_wall(left_column, bottom_row);
+        let top_right = map.is_wall(right_column, top_row);
+        let bottom_right = map.is_wall(right_column, bottom_row);
+
+        let has_collision = match direction {
+            MoveDirection::Up => top_left || top_right,
+            MoveDirection::Down => bottom_left || bottom_right,
+            MoveDirection::Left => top_left || bottom_left,
+            MoveDirection::Right => top_right || bottom_right,
+        };
+
+        let target_position = if has_collision {
+            match direction {
+                MoveDirection::Up => Vec3::new(
+                    target_position.x,
+                    -((top_row + 1) as f32) * CELL_HEIGHT,
+                    0.0,
+                ),
+                MoveDirection::Down => Vec3::new(
+                    target_position.x,
+                    -((bottom_row - 1) as f32) * CELL_HEIGHT,
+                    0.0,
+                ),
+                MoveDirection::Left => Vec3::new(
+                    (left_column + 1) as f32 * CELL_WIDTH,
+                    target_position.y,
+                    0.0,
+                ),
+                MoveDirection::Right => Vec3::new(
+                    (right_column - 1) as f32 * CELL_WIDTH,
+                    target_position.y,
+                    0.0,
+                ),
+            }
+        } else {
+            target_position
+        };
+
+        transform.translation = target_position;
     }
 }
 
