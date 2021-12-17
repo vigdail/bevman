@@ -31,7 +31,6 @@ impl Level {
         self.walls[index] = true;
     }
 
-    #[allow(dead_code)]
     pub fn is_wall(&self, x: usize, y: usize) -> bool {
         let index = self.xy_to_index(x, y);
         self.walls.get(index).cloned().unwrap_or(false)
