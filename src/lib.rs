@@ -20,7 +20,7 @@ enum GameState {
 pub struct BevManPlugin;
 
 impl Plugin for BevManPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(WindowDescriptor {
             width: 800.0,
             height: 600.0,
@@ -34,14 +34,14 @@ impl Plugin for BevManPlugin {
             ..Default::default()
         })
         .add_state(GameState::Loading)
-        .add_system(exit_on_esc_system.system())
+        .add_system(exit_on_esc_system)
         .add_plugins(DefaultPlugins)
         .add_plugin(LoadingPlugin)
         .add_plugin(DebugPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(CameraPlugin)
-        .add_startup_system(startup_system.system());
+        .add_startup_system(startup_system);
     }
 
     fn name(&self) -> &str {

@@ -9,11 +9,13 @@ use bevy::{
 
 pub const PLAYER_SPEED: f32 = 100.0;
 
+#[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
 pub struct Speed(pub f32);
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Component)]
 pub enum MoveDirection {
     Up,
     Down,
@@ -45,7 +47,7 @@ impl MoveDirection {
 #[derive(Default, Debug, Copy, Clone)]
 pub struct NextDirection(Option<MoveDirection>);
 
-#[derive(Default)]
+#[derive(Default, Component)]
 pub struct GridPosition {
     pub x: i32,
     pub y: i32,
@@ -54,14 +56,14 @@ pub struct GridPosition {
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(NextDirection::default())
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
-                    .with_system(world_to_grid_system.system())
-                    .with_system(input_system.system())
-                    .with_system(movement_system.system())
-                    .with_system(change_direction_system.system()),
+                    .with_system(world_to_grid_system)
+                    .with_system(input_system)
+                    .with_system(movement_system)
+                    .with_system(change_direction_system),
             );
     }
 }
@@ -137,14 +139,14 @@ fn movement_system(
 }
 
 fn change_direction_system(
-    mut query: Query<(&mut MoveDirection, &Transform, &MoveDirection), With<Player>>,
+    mut query: Query<(&mut MoveDirection, &Transform), With<Player>>,
     mut next_direction: ResMut<NextDirection>,
 ) {
     if let Some(dir) = next_direction.0 {
-        for (mut direction, transform, current_direction) in query.iter_mut() {
+        for (mut direction, transform) in query.iter_mut() {
             let is_x_aligned = (transform.translation.x as i32 % CELL_WIDTH as i32) == 0;
             let is_y_aligned = (transform.translation.y as i32 % CELL_HEIGHT as i32) == 0;
-            let is_opposite = current_direction.is_opposite(&dir);
+            let is_opposite = direction.is_opposite(&dir);
             if is_opposite || (is_x_aligned && is_y_aligned) {
                 *direction = dir;
                 next_direction.0 = None;
@@ -183,7 +185,7 @@ mod tests {
     fn world_to_grid() {
         let mut world = World::default();
         let mut update_stage = SystemStage::parallel();
-        update_stage.add_system(world_to_grid_system.system());
+        update_stage.add_system(world_to_grid_system);
 
         let player = world
             .spawn()

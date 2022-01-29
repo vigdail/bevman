@@ -9,6 +9,7 @@ use bevy::prelude::*;
 pub const CELL_WIDTH: f32 = 32.0;
 pub const CELL_HEIGHT: f32 = 32.0;
 
+#[derive(Component)]
 pub struct Wall;
 
 pub struct Level {
@@ -47,25 +48,21 @@ impl Level {
 pub struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_enter(GameState::Gameplay).with_system(spawn_level_system.system()),
+            SystemSet::on_enter(GameState::Gameplay).with_system(spawn_level_system),
         );
     }
 }
 
 // TODO: proper level format (json maybe?)
 // TODO: load level as an asset
-fn spawn_level_system(
-    mut cmd: Commands,
-    textures: Res<TextureAssets>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn spawn_level_system(mut cmd: Commands, textures: Res<TextureAssets>) {
     let path = "assets/levels/level1.txt";
     let data = std::fs::read_to_string(path).unwrap(); // TODO: Handle errors
 
-    let wall_material = materials.add(textures.wall.clone().into());
-    let player_material = materials.add(textures.player.clone().into());
+    let wall_material = textures.wall.clone();
+    let player_material = textures.player.clone();
 
     let mut lines_iter = data.lines();
     let mut level = {
@@ -95,18 +92,18 @@ fn spawn_level_system(
     cmd.insert_resource(level);
 }
 
-fn spawn_wall(cmd: &mut Commands, material: Handle<ColorMaterial>, x: f32, y: f32) {
+fn spawn_wall(cmd: &mut Commands, texture: Handle<Image>, x: f32, y: f32) {
     cmd.spawn_bundle(SpriteBundle {
-        material,
+        texture,
         transform: Transform::from_xyz(x, y, 0.0),
         ..Default::default()
     })
     .insert(Wall);
 }
 
-fn spawn_player(cmd: &mut Commands, material: Handle<ColorMaterial>, x: f32, y: f32) {
+fn spawn_player(cmd: &mut Commands, texture: Handle<Image>, x: f32, y: f32) {
     cmd.spawn_bundle(SpriteBundle {
-        material,
+        texture,
         transform: Transform::from_xyz(x, y, 0.0),
         ..Default::default()
     })

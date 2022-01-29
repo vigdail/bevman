@@ -4,22 +4,23 @@ use crate::{
 };
 use bevy::prelude::*;
 
+#[derive(Component)]
 pub struct DebugCell;
 
 pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(create_debug_cell_system.system())
-            .add_system(debug_cell_position_system.system());
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(create_debug_cell_system)
+            .add_system(debug_cell_position_system);
     }
 }
 
-fn create_debug_cell_system(mut cmd: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+fn create_debug_cell_system(mut cmd: Commands) {
     cmd.spawn_bundle(SpriteBundle {
-        material: materials.add(ColorMaterial::color(Color::GREEN)),
         sprite: Sprite {
-            size: Vec2::new(CELL_WIDTH, CELL_HEIGHT),
+            color: Color::GREEN,
+            custom_size: Some(Vec2::new(CELL_WIDTH, CELL_HEIGHT)),
             ..Default::default()
         },
         ..Default::default()

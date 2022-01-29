@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::camera::Camera};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Component)]
 pub struct CameraTarget {
     left: f32,
     right: f32,
@@ -27,16 +27,16 @@ impl CameraTarget {
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        app.add_system(camera_follow_system.system());
+    fn build(&self, app: &mut App) {
+        app.add_system(camera_follow_system);
     }
 }
 
 #[allow(clippy::type_complexity)]
 fn camera_follow_system(
     mut query: QuerySet<(
-        Query<&mut Transform, With<Camera>>,
-        Query<(&Transform, &CameraTarget)>,
+        QueryState<&mut Transform, With<Camera>>,
+        QueryState<(&Transform, &CameraTarget)>,
     )>,
 ) {
     let (&target_transform, &target_box) = match query.q1().iter().next() {
@@ -44,7 +44,7 @@ fn camera_follow_system(
         _ => return,
     };
 
-    for mut camera_transform in query.q0_mut().iter_mut() {
+    for mut camera_transform in query.q0().iter_mut() {
         let z = camera_transform.translation.z;
         let min = Vec3::new(
             target_transform.translation.x + target_box.left,
